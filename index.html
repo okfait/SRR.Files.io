@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRR FILES v4.5</title>
+    <title>SRR FILES v4.10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -26,8 +26,10 @@
             --critical: #ef4444;
             --success: #10b981;
             
+            /* RESTORED SMOOTHER CORNERS (v4.7 values) */
             --radius-lg: 24px;
-            --radius-md: 12px;
+            --radius-md: 16px;
+            
             --panel-bg: rgba(255,255,255,0.02);
             --panel-hover: rgba(255,255,255,0.05);
         }
@@ -45,6 +47,21 @@
             --panel-hover: rgba(0,0,0,0.05);
         }
 
+        /* LOCKED DARK PILL SCROLLBARS */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(255, 255, 255, 0.15); 
+            border-radius: 99px; 
+            border: 3px solid transparent; 
+            background-clip: content-box; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background-color: var(--accent); 
+            border: 3px solid transparent;
+            background-clip: content-box;
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-base);
@@ -54,10 +71,18 @@
             transition: color 0.3s ease, background-color 0.3s ease;
         }
 
-        #bg-layer { position: fixed; inset: -50%; width: 200%; height: 200%; background: var(--bg-radial); opacity: 1; z-index: -3; animation: spin-slow 180s linear infinite; pointer-events: none; }
+        /* BACKGROUND FIX: 300% SIZE TO PREVENT CORNERS SHOWING */
+        #bg-layer { 
+            position: fixed; 
+            top: -100%; left: -100%; width: 300%; height: 300%; 
+            background: var(--bg-radial); 
+            opacity: 1; z-index: -3; 
+            animation: spin-slow 240s linear infinite; 
+            pointer-events: none; 
+        }
         @keyframes spin-slow { 100% { transform: rotate(360deg); } }
 
-        /* TOP BAR (SCROLLS AWAY) */
+        /* TOP BAR */
         .top-bar { 
             position: relative; 
             z-index: 50; 
@@ -67,32 +92,16 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* STICKY CONTROLS WRAPPER */
+        /* STICKY CONTROLS */
         .sticky-wrapper {
-            position: sticky;
-            top: 0;
-            z-index: 90;
-            padding: 20px 30px;
-            margin: 0 -30px; /* Offset parent padding to touch edges */
-            /* TRANSPARENT BACKGROUND WITH BLUR */
-            background: transparent; 
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            border-bottom: 1px solid transparent;
-            transition: all 0.3s ease;
+            position: sticky; top: 0; z-index: 90; padding: 20px 30px; margin: 0 -30px; 
+            background: transparent; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid transparent; transition: all 0.3s ease;
         }
-        /* Add slight border when stuck to separate from content */
-        .sticky-wrapper.is-pinned {
-            border-bottom: 1px solid var(--glass-border);
-            background: rgba(0,0,0,0.2); /* Very subtle tint when pinned */
-        }
+        .sticky-wrapper.is-pinned { border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); }
 
-        .controls-row {
-            display: flex; flex-direction: column; gap: 1rem; max-width: 80rem; margin: 0 auto;
-        }
-        @media (min-width: 768px) {
-            .controls-row { flex-direction: row; justify-content: space-between; align-items: center; }
-        }
+        .controls-row { display: flex; flex-direction: column; gap: 1rem; max-width: 80rem; margin: 0 auto; }
+        @media (min-width: 768px) { .controls-row { flex-direction: row; justify-content: space-between; align-items: center; } }
 
         .glass-panel { 
             background: var(--glass-base); backdrop-filter: blur(20px) saturate(110%);
@@ -109,11 +118,9 @@
         .case-row:hover { background: var(--panel-hover); border-color: var(--glass-border); transform: translateX(2px); }
         .case-row.critical { border-left-color: var(--critical); background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, transparent 100%); }
         
-        /* HEADER SORTING FIXED */
         .case-row.header { 
             background: transparent; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; 
-            font-weight: 800; color: var(--text-dim); padding: 10px 20px; border: none;
-            user-select: none;
+            font-weight: 800; color: var(--text-dim); padding: 10px 20px; border: none; user-select: none;
         }
         .sort-btn {
             background: transparent; border: none; color: var(--text-dim); font-weight: 800; font-size: 11px;
@@ -128,7 +135,7 @@
 
         .void-input {
             width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--glass-border);
-            border-radius: 8px; padding: 8px 12px; color: var(--text-main); font-size: 13px; outline: none; transition: 0.3s;
+            border-radius: 8px; padding: 8px 12px; color: var(--text-main); font-size: 13px; transition: 0.3s; outline: none;
         }
         .void-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.05); }
         .void-input:disabled { opacity: 0.6; cursor: not-allowed; background: transparent; border-color: transparent; padding-left: 0; }
@@ -182,10 +189,11 @@
         .custom-options.show { display: block; animation: fadeIn 0.2s; }
         .custom-option {
             padding: 8px 12px; font-size: 11px; font-weight: 600; color: var(--text-dim);
-            border-radius: 8px; cursor: pointer; transition: 0.1s;
+            border-radius: 8px; cursor: pointer; transition: 0.1s; display: flex; justify-content: space-between;
         }
         .custom-option:hover { background: var(--accent); color: white; }
         .custom-option.selected { color: var(--accent); }
+        .opt-count { opacity: 0.5; font-size: 10px; margin-left: 8px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         .stat-box { display: flex; flex-direction: column; align-items: center; padding: 0 25px; }
@@ -197,7 +205,6 @@
         #toast { position: fixed; bottom: 30px; right: 30px; transform: translateY(100px); background: var(--accent); color: white; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 12px; box-shadow: 0 10px 30px var(--accent-glow); transition: transform 0.3s; z-index: 200; pointer-events: none; }
         #toast.show { transform: translateY(0); }
         
-        /* NEW BADGE */
         .new-badge {
             background: var(--accent); color: #000; padding: 1px 6px; border-radius: 4px;
             font-size: 8px; font-weight: 900; letter-spacing: 0.5px;
@@ -231,13 +238,15 @@
             </div>
         </div>
 
+        <!-- SIMPLIFIED STATS (ONLY TOTAL) -->
         <div class="hidden md:flex bg-[var(--panel-bg)] border border-[var(--glass-border)] rounded-full py-2 px-6">
             <div class="stat-box" style="border:none"><span class="stat-val" id="stat-total">50</span><span class="stat-lbl">Total Files</span></div>
         </div>
 
         <div class="flex items-center gap-3">
             <div class="hidden md:flex gap-2 mr-4">
-                <button onclick="addNewCase()" class="w-8 h-8 rounded-full bg-[var(--accent)] text-white hover:scale-110 transition flex items-center justify-center shadow-lg shadow-[var(--accent-glow)]" title="Add New Case"><i class="fa-solid fa-plus"></i></button>
+                <!-- ADD BUTTON (ADMIN ONLY) -->
+                <button onclick="addNewCase()" id="btnAddCase" class="w-8 h-8 rounded-full bg-[var(--accent)] text-white hover:scale-110 transition hidden items-center justify-center shadow-lg shadow-[var(--accent-glow)]" title="Add New Case"><i class="fa-solid fa-plus"></i></button>
                 <button onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-[var(--panel-bg)] text-[var(--text-dim)] border border-[var(--glass-border)] hover:text-[var(--text-main)] transition flex items-center justify-center" title="Theme"><i class="fa-solid fa-sun text-xs"></i></button>
             </div>
             <div id="auth-ui">
@@ -257,7 +266,7 @@
             Please create the Firestore Database in Firebase Console (Start in Test Mode).
         </div>
 
-        <!-- STICKY CONTROLS WRAPPER (TRANSPARENT BACKGROUND) -->
+        <!-- STICKY CONTROLS -->
         <div class="sticky-wrapper" id="sticky-header">
             <div class="controls-row">
                 <div class="search-wrapper">
@@ -265,16 +274,13 @@
                     <input type="text" id="searchInput" class="search-pill" placeholder="Search ID, Subject, or Notes...">
                 </div>
 
-                <!-- UNIFIED FILTER BAR -->
                 <div class="filter-container">
                     <button onclick="window.setFilter('all')" class="filter-pill active" data-filter="all">ALL</button>
                     <button onclick="window.setFilter('used')" class="filter-pill" data-filter="used">USED</button>
                     <button onclick="window.setFilter('critical')" class="filter-pill" data-filter="critical">CRITICAL</button>
-                    
-                    <!-- CUSTOM DROPDOWN -->
                     <div class="relative">
                         <div class="custom-select-trigger" onclick="toggleAgentDropdown(event)">
-                            <span id="agent-trigger-text">ALL PERSONS</span>
+                            <span id="agent-trigger-text">ALL SUBJECTS</span>
                             <i class="fa-solid fa-chevron-down text-[10px]"></i>
                         </div>
                         <div class="custom-options" id="agent-options"></div>
@@ -288,28 +294,10 @@
             <!-- SORTING HEADER -->
             <div class="case-row header hidden md:grid">
                 <div class="text-center" id="header-select"><i class="fa-solid fa-check-double opacity-50"></i></div>
-                
-                <button class="sort-btn" onclick="setSort('id')">
-                    ID No. <i class="fa-solid fa-sort ml-1 opacity-50"></i>
-                </button>
-                
-                <div class="flex justify-center">
-                    <button class="sort-btn" onclick="setSort('status')">
-                        Status <i class="fa-solid fa-sort ml-1 opacity-50"></i>
-                    </button>
-                </div>
-                
-                <div class="flex justify-center">
-                    <button class="sort-btn" onclick="setSort('date')">
-                        Timestamp <i class="fa-solid fa-sort ml-1 opacity-50"></i>
-                    </button>
-                </div>
-                
-                <div class="flex justify-start pl-3">
-                    <button class="sort-btn" onclick="setSort('agent')">
-                        Subject / Notes <i class="fa-solid fa-sort ml-1 opacity-50"></i>
-                    </button>
-                </div>
+                <button class="sort-btn" onclick="setSort('id')">ID No. <i class="fa-solid fa-sort ml-1 opacity-50"></i></button>
+                <div class="flex justify-center"><button class="sort-btn" onclick="setSort('status')">Status <i class="fa-solid fa-sort ml-1 opacity-50"></i></button></div>
+                <div class="flex justify-center"><button class="sort-btn" onclick="setSort('date')">Timestamp <i class="fa-solid fa-sort ml-1 opacity-50"></i></button></div>
+                <div class="flex justify-start pl-3"><button class="sort-btn" onclick="setSort('agent')">Subject / Notes <i class="fa-solid fa-sort ml-1 opacity-50"></i></button></div>
             </div>
 
             <div id="tableBody" class="space-y-1">
@@ -318,7 +306,7 @@
         </div>
 
         <div class="text-center mt-12 mb-4 text-[10px] text-[var(--text-dim)] font-mono tracking-widest uppercase">
-            System Developed by <span class="text-[var(--text-main)] opacity-50">rick_grimesz</span> & <span class="text-[var(--text-main)] opacity-50">Gemini</span> // SRR FILES V4.5
+            System Developed by <span class="text-[var(--text-main)] opacity-50">rick_grimesz</span> & <span class="text-[var(--text-main)] opacity-50">Gemini</span> // SRR FILES V4.10
         </div>
     </div>
 
@@ -357,13 +345,13 @@
                     <h2 class="text-2xl font-black text-[var(--text-main)]" id="mgr-id">CASE ID: ---</h2>
                     <div class="flex gap-4 text-xs font-mono mt-1 text-[var(--text-dim)]"><span id="mgr-status">ACTIVE</span><span id="mgr-date">--</span></div>
                 </div>
-                <div class="ml-auto flex gap-2">
+                <div class="ml-auto flex gap-2" id="mgr-admin-tools">
                     <button onclick="togglePriorityInMgr()" class="px-4 py-2 border border-[var(--glass-border)] rounded-lg text-xs font-bold hover:bg-white/5 transition" id="mgr-priority-btn">MARK CRITICAL</button>
                     <button onclick="deleteCaseInMgr()" class="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition">ARCHIVE</button>
                 </div>
             </div>
             
-            <!-- CONTENT: EVIDENCE LOCKER CENTER STAGE -->
+            <!-- CONTENT: EVIDENCE LOCKER -->
             <div class="flex-1 p-8 flex flex-col bg-[var(--panel-bg)] overflow-hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xs font-bold text-[var(--text-dim)] uppercase tracking-wider">EVIDENCE LOCKER</h3>
@@ -371,11 +359,21 @@
                 
                 <div id="video-player-container" class="flex-grow aspect-video bg-black rounded-xl border border-[var(--glass-border)] flex items-center justify-center overflow-hidden relative shadow-2xl"></div>
                 
-                <div class="mt-6 p-4 bg-[var(--glass-base)] border border-[var(--glass-border)] rounded-xl">
-                    <label class="text-[10px] uppercase font-bold text-[var(--text-dim)] block mb-2">Update Evidence Link</label>
-                    <div class="flex gap-2">
+                <!-- ADMIN ONLY INPUT -->
+                <div class="mt-6 p-4 bg-[var(--glass-base)] border border-[var(--glass-border)] rounded-xl" id="mgr-input-container">
+                    <label class="text-[10px] uppercase font-bold text-[var(--text-dim)] block mb-2">Paste Evidence Link</label>
+                    <div class="flex gap-2 mb-3">
                         <input type="text" id="mgr-video-input" class="void-input flex-grow bg-black/20" placeholder="https://...">
                         <button onclick="saveMgrData()" class="px-6 py-2 bg-[var(--accent)] text-white font-bold rounded-lg text-xs shadow-lg hover:scale-105 transition">SAVE</button>
+                    </div>
+                    
+                    <div class="flex gap-2 border-t border-[var(--glass-border)] pt-3">
+                        <a href="https://imgur.com/upload" target="_blank" class="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold text-gray-400 hover:text-white transition flex items-center gap-2">
+                            <i class="fa-solid fa-image"></i> Upload Image
+                        </a>
+                        <a href="https://streamable.com/upload" target="_blank" class="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold text-gray-400 hover:text-white transition flex items-center gap-2">
+                            <i class="fa-solid fa-video"></i> Upload Video
+                        </a>
                     </div>
                 </div>
             </div>
@@ -408,6 +406,7 @@
         let agentFilter = '';
         let selectedCases = new Set();
         let currentModalId = null;
+        let subjectCounts = {};
 
         const defaultIds = [
             "SRR-8291-1029", "SRR-5542-3312", "SRR-7748-2110", "SRR-6659-0092", "SRR-4438-1288",
@@ -430,13 +429,15 @@
                 if (user) {
                     isAdmin = true;
                     document.body.classList.add('admin-active'); 
+                    document.getElementById('btnAddCase').style.display = 'flex';
                     ui.innerHTML = `<button id="logout-btn" class="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-full text-xs font-bold hover:bg-red-500 hover:text-white transition">LOGOUT</button>`;
                     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
                     checkAndInitDB();
                 } else {
                     isAdmin = false;
                     document.body.classList.remove('admin-active'); 
-                    ui.innerHTML = `<button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="px-5 py-2 rounded-full bg-[var(--glass-base)] border border-[var(--glass-border)] text-xs font-bold hover:bg-white/10">LOGIN</button>`;
+                    document.getElementById('btnAddCase').style.display = 'none';
+                    ui.innerHTML = `<button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="px-5 py-2 rounded-full bg-[var(--panel-bg)] border border-[var(--glass-border)] text-xs font-bold hover:bg-white/10">LOGIN</button>`;
                 }
                 renderTable();
             });
@@ -446,6 +447,7 @@
                 document.getElementById('connection-text').innerText = "SECURE LINK ESTABLISHED";
                 document.getElementById('firestore-error').style.display = 'none';
                 snapshot.forEach((doc) => { casesData[doc.id] = doc.data(); });
+                calcSubjectCounts();
                 updateAgentDropdown();
                 renderTable();
             }, (error) => {
@@ -462,15 +464,26 @@
             } catch(e) {}
         }
 
+        function calcSubjectCounts() {
+            subjectCounts = {};
+            Object.values(casesData).forEach(c => {
+                if(c.name && c.name.trim().length > 0) {
+                    const n = c.name.trim().toUpperCase();
+                    subjectCounts[n] = (subjectCounts[n] || 0) + 1;
+                }
+            });
+        }
+
         function updateAgentDropdown() {
             const agents = new Set();
             Object.values(casesData).forEach(c => { if(c.name && c.name.trim().length > 0) agents.add(c.name.trim()); });
             const list = document.getElementById('agent-options');
-            list.innerHTML = '<div class="custom-option selected" onclick="selectAgent(\'\')">ALL PERSONS</div>';
+            list.innerHTML = '<div class="custom-option selected" onclick="selectAgent(\'\')">ALL SUBJECTS</div>';
             Array.from(agents).sort().forEach(a => {
+                const count = subjectCounts[a.toUpperCase()] || 0;
                 const div = document.createElement('div');
                 div.className = 'custom-option';
-                div.innerText = a.toUpperCase();
+                div.innerHTML = `<span>${a.toUpperCase()}</span> ${count > 1 ? `<span class="opt-count">${count}</span>` : ''}`;
                 div.onclick = () => selectAgent(a);
                 list.appendChild(div);
             });
@@ -483,7 +496,7 @@
 
         window.selectAgent = (val) => {
             agentFilter = val;
-            document.getElementById('agent-trigger-text').innerText = val ? val.toUpperCase() : "ALL PERSONS";
+            document.getElementById('agent-trigger-text').innerText = val ? val.toUpperCase() : "ALL SUBJECTS";
             document.getElementById('agent-options').classList.remove('show');
             renderTable();
         };
@@ -580,7 +593,7 @@
                         </div>
                         <div class="text-center"><button class="status-badge" onclick="toggleStatus('${id}')">AVAILABLE</button></div>
                         <div><input type="text" class="void-input font-mono text-center text-xs date-input" placeholder="--" onchange="updateDate('${id}',this.value)"></div>
-                        <div><input type="text" class="void-input font-mono sensitive-data name-input" placeholder="..." oninput="updateName('${id}',this.value)" list="agent-list"></div>
+                        <div class="flex items-center"><input type="text" class="void-input font-mono sensitive-data name-input" placeholder="..." oninput="updateName('${id}',this.value)" list="agent-list"></div>
                     `;
                     tbody.appendChild(row);
                 }
@@ -645,6 +658,7 @@
 
         // --- MANAGER ---
         window.openManager = (id) => {
+            currentModalId = id;
             document.getElementById('manager-modal').classList.remove('hidden');
             document.getElementById('mgr-id').innerText = `CASE ID: ${id}`;
             const data = casesData[id];
@@ -653,9 +667,20 @@
             document.getElementById('mgr-status').className = data.used ? 'text-green-500 font-bold' : 'text-[var(--text-dim)] font-bold';
             document.getElementById('mgr-date').innerText = data.date || "NO TIMESTAMP";
 
-            const pBtn = document.getElementById('mgr-priority-btn');
-            if(data.priority) { pBtn.className = 'px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-bold'; pBtn.innerText = "CRITICAL ACTIVE"; }
-            else { pBtn.className = 'px-4 py-2 border border-[var(--glass-border)] rounded-lg text-xs font-bold hover:bg-white/5'; pBtn.innerText = "MARK CRITICAL"; }
+            // ADMIN ONLY TOOLS
+            const adminTools = document.getElementById('mgr-admin-tools');
+            const inputContainer = document.getElementById('mgr-input-container');
+            
+            if(isAdmin) {
+                adminTools.style.display = 'flex';
+                inputContainer.style.display = 'block';
+                const pBtn = document.getElementById('mgr-priority-btn');
+                if(data.priority) { pBtn.className = 'px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-bold'; pBtn.innerText = "CRITICAL ACTIVE"; }
+                else { pBtn.className = 'px-4 py-2 border border-[var(--glass-border)] rounded-lg text-xs font-bold hover:bg-white/5'; pBtn.innerText = "MARK CRITICAL"; }
+            } else {
+                adminTools.style.display = 'none';
+                inputContainer.style.display = 'none';
+            }
 
             document.getElementById('mgr-video-input').value = data.video || "";
             renderVideoPreview(data.video);
@@ -663,8 +688,10 @@
             window.saveMgrData = async () => {
                 if(!isAdmin) return;
                 const vid = document.getElementById('mgr-video-input').value;
-                await updateDoc(doc(db, "cases", id), { video: vid });
+                // INSTANT UPDATE LOCAL STATE
+                if(casesData[currentModalId]) casesData[currentModalId].video = vid;
                 renderVideoPreview(vid);
+                await updateDoc(doc(db, "cases", id), { video: vid });
                 showToast("EVIDENCE UPDATED");
             };
             
@@ -674,18 +701,34 @@
 
         function renderVideoPreview(url) {
             const container = document.getElementById('video-player-container');
-            if(url) {
-                if(url.includes('youtube') || url.includes('youtu.be')) {
-                    let vidId = url.split('v=')[1] || url.split('/').pop();
-                    container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vidId}" frameborder="0" allowfullscreen></iframe>`;
-                } else if(url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-                    container.innerHTML = `<img src="${url}" class="h-full object-contain">`;
-                } else {
-                    // CLICKABLE CONTAINER BOX
-                    container.innerHTML = `<a href="${url}" target="_blank" class="w-full h-full flex flex-col items-center justify-center text-[var(--accent)] hover:bg-[var(--panel-hover)] transition cursor-pointer no-underline"><i class="fa-solid fa-external-link-alt text-3xl mb-2"></i><span class="font-bold underline">OPEN EXTERNAL LINK</span></a>`;
-                }
-            } else {
+            if(!url) {
                 container.innerHTML = `<div class="text-white/30 text-sm flex flex-col items-center gap-2"><i class="fa-solid fa-eye-slash text-2xl"></i><span>No Digital Evidence Found</span></div>`;
+                return;
+            }
+
+            if(url.includes('youtube') || url.includes('youtu.be')) {
+                let vidId = url.split('v=')[1] || url.split('/').pop();
+                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vidId}" frameborder="0" allowfullscreen></iframe>`;
+            } 
+            // STREAMABLE AUTO-EMBED
+            else if(url.includes('streamable.com')) {
+                const code = url.split('/').pop().split('?')[0];
+                container.innerHTML = `<iframe src="https://streamable.com/e/${code}" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>`;
+            }
+            else if(url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
+                container.innerHTML = `<img src="${url}" class="h-full object-contain">`;
+            } 
+            else if(url.endsWith('.mp4') || url.endsWith('.webm')) {
+                container.innerHTML = `<video src="${url}" controls class="w-full h-full"></video>`;
+            } 
+            else {
+                // SMART EXTERNAL LINK BUTTON
+                let icon = 'fa-external-link-alt';
+                let label = 'OPEN EXTERNAL LINK';
+                if(url.includes('imgur')) { icon = 'fa-image'; label = 'OPEN IMGUR IMAGE'; }
+                if(url.includes('vimeo') || url.includes('dailymotion')) { icon = 'fa-video'; label = 'OPEN VIDEO LINK'; }
+
+                container.innerHTML = `<a href="${url}" target="_blank" class="w-full h-full flex flex-col items-center justify-center text-[var(--accent)] hover:bg-[var(--panel-hover)] transition cursor-pointer no-underline"><i class="fa-solid ${icon} text-3xl mb-2"></i><span class="font-bold underline">${label}</span></a>`;
             }
         }
 
