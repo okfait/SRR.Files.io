@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRR Case Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Cyberpunk Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f0f0f; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Input Styling */
+        .void-input {
+            background-color: #000000;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            transition: border-color 0.3s ease;
+        }
+        .void-input:focus { outline: none; border-color: #666; }
+        .void-input:disabled { background-color: #0a0a0a; color: #444; border-color: #1a1a1a; cursor: not-allowed; }
+
+        /* Status Button Animations */
+        .status-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glow-red { box-shadow: 0 0 10px rgba(220, 38, 38, 0.2); }
+        .glow-green { box-shadow: 0 0 15px rgba(22, 163, 74, 0.4); }
+        
+        .status-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.8); }
+
+        /* Modal Overlay */
+        .modal-bg {
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-[#050505] text-gray-200 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-gray-800 pb-6">
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider text-white mb-2">
+                    <i class="fas fa-database mr-2 text-purple-600"></i>SRR CLOUD
+                </h1>
+                <p class="text-gray-500 text-sm flex items-center gap-2">
+                    <span id="connection-dot" class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span id="connection-text">Connecting to Server...</span>
+                </p>
+            </div>
+            
+            <!-- Stats & Progress -->
+            <div class="flex flex-col w-full md:w-auto mt-4 md:mt-0 gap-3">
+                <div class="flex gap-4">
+                    <div class="bg-gray-900 px-5 py-2 rounded border border-gray-800 text-center flex-1">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest">Total</div>
+                        <div class="text-lg font-mono font-bold text-white">50</div>
+                    </div>
+                    <div class="bg-gray-900 px-5 py-2 rounded border border-gray-800 text-center flex-1">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest">Used</div>
+                        <div id="stat-used" class="text-lg font-mono font-bold text-green-500">...</div>
+                    </div>
+                    <div class="bg-gray-900 px-5 py-2 rounded border border-gray-800 text-center flex-1">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest">Left</div>
+                        <div id="stat-remaining" class="text-lg font-mono font-bold text-red-500">...</div>
+                    </div>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-900 rounded-full h-2.5 border border-gray-800 relative overflow-hidden">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Toolbar -->
+        <div class="flex flex-col gap-4 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="relative w-full md:w-1/3">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-600"></i>
+                    <input type="text" id="searchInput" placeholder="Search ID or Name..." 
+                        class="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white focus:border-blue-500 focus:outline-none placeholder-gray-600">
+                </div>
+                
+                <div class="flex bg-gray-900 p-1 rounded border border-gray-800">
+                    <button onclick="window.setFilter('all')" class="filter-btn active px-4 py-1.5 text-xs font-bold rounded hover:bg-gray-800 text-white bg-gray-800 transition-colors" data-filter="all">ALL</button>
+                    <button onclick="window.setFilter('used')" class="filter-btn px-4 py-1.5 text-xs font-bold rounded hover:bg-gray-800 text-gray-400 transition-colors" data-filter="used">USED</button>
+                    <button onclick="window.setFilter('free')" class="filter-btn px-4 py-1.5 text-xs font-bold rounded hover:bg-gray-800 text-gray-400 transition-colors" data-filter="free">FREE</button>
+                </div>
+            </div>
+
+            <!-- Login / Admin Bar -->
+            <div class="flex justify-between items-center bg-[#111] p-3 rounded border border-gray-800">
+                <div class="flex items-center gap-3">
+                    <div id="auth-status" class="flex items-center gap-2">
+                        <button id="login-btn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition-colors">
+                            <i class="fas fa-lock mr-2"></i>ADMIN LOGIN
+                        </button>
+                        <span class="text-xs text-gray-500 ml-2 italic">Login to make changes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Table -->
+        <div class="bg-[#111] rounded-lg border border-gray-800 overflow-hidden shadow-2xl min-h-[500px]">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-900 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                            <th class="p-4 w-1/4">Case ID</th>
+                            <th class="p-4 w-1/6 text-center">Status</th>
+                            <th class="p-4 w-1/4">Date Logged</th>
+                            <th class="p-4 w-1/3">Assigned Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-800">
+                        <tr><td colspan="4" class="p-8 text-center text-gray-500">Loading Database...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <footer class="text-center text-gray-600 text-xs mt-12 mb-4">
+            Powered by Google Firestore • Real-time Updates Active
+        </footer>
+
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="hidden fixed inset-0 modal-bg flex items-center justify-center z-50">
+        <div class="bg-[#1a1a1a] p-8 rounded-lg border border-gray-700 w-96 shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-4">Admin Access</h2>
+            <input type="email" id="email-input" placeholder="Admin Email" class="w-full bg-black border border-gray-700 text-white p-2 rounded mb-3">
+            <input type="password" id="pass-input" placeholder="Password" class="w-full bg-black border border-gray-700 text-white p-2 rounded mb-6">
+            <div class="flex justify-between">
+                <button id="cancel-login" class="text-gray-400 hover:text-white text-sm">Cancel</button>
+                <button id="confirm-login" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE MODULE LOGIC -->
+    <script type="module">
+        // --- 1. CONFIGURATION SECTION (EDIT THIS) ---
+        // Go to Firebase Console -> Project Settings -> General -> "Your apps" -> SDK Setup and Config -> Copy the firebaseConfig object
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCuNTrF67ir5FivcC-eLxU54hmEHgTWZg",
+            authDomain: "srr-files.firebaseapp.com",
+            databaseURL: "https://srr-files-default-rtdb.firebaseio.com",
+            projectId: "srr-files",
+            storageBucket: "srr-files.firebasestorage.app",
+            messagingSenderId: "631780470080",
+            appId: "1:631780470080:web:54e2c12fef407274c51ea5",
+            measurementId: "G-047TMV0Y3X"
+        };
+
+        // --- END CONFIGURATION ---
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Initialize Firebase
+        let app, db, auth;
+        let isAdmin = false;
+        let casesData = {};
+        
+        // Check if config is set
+        if (firebaseConfig.apiKey === "PASTE_YOUR_API_KEY_HERE") {
+            document.body.innerHTML = `<div class='p-10 text-center text-white'>
+                <h1 class='text-2xl text-red-500 mb-4'>Configuration Missing</h1>
+                <p>You need to paste your Firebase Config keys into the code (Line 125).</p>
+                <p class='mt-4 text-gray-400 text-sm'>Check the instructions provided by the AI.</p>
+            </div>`;
+        } else {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            startApp();
+        }
+
+        function startApp() {
+            // AUTH LISTENER
+            onAuthStateChanged(auth, (user) => {
+                const authStatus = document.getElementById('auth-status');
+                if (user) {
+                    isAdmin = true;
+                    authStatus.innerHTML = `
+                        <span class="text-green-500 text-xs font-bold mr-2"><i class="fas fa-user-shield"></i> ADMIN ACTIVE</span>
+                        <button id="logout-btn" class="text-xs bg-red-900/50 hover:bg-red-900 text-red-200 px-3 py-1 rounded border border-red-900">Logout</button>
+                    `;
+                    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+                    checkAndInitDB(); // Ensure DB is seeded
+                } else {
+                    isAdmin = false;
+                    authStatus.innerHTML = `
+                        <button id="login-btn" class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded font-bold transition-colors">
+                            <i class="fas fa-lock mr-2"></i>ADMIN LOGIN
+                        </button>
+                    `;
+                    setupLoginModal();
+                }
+                renderTable(); // Re-render to update disabled states
+            });
+
+            // DATABASE LISTENER (Real-time)
+            const unsub = onSnapshot(collection(db, "cases"), (snapshot) => {
+                document.getElementById('connection-dot').className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]";
+                document.getElementById('connection-text').innerText = "Live Synced";
+                
+                snapshot.forEach((doc) => {
+                    casesData[doc.id] = doc.data();
+                });
+                renderTable();
+            }, (error) => {
+                console.error("DB Error:", error);
+                document.getElementById('connection-dot').className = "w-2 h-2 rounded-full bg-red-600";
+                document.getElementById('connection-text').innerText = "Connection Error";
+            });
+        }
+
+        // INITIAL SEED (Run once by Admin if DB is empty)
+        const defaultIds = [
+            "SRR-8291-ALPHA", "SRR-1029-BRAVO", "SRR-5542-CHARLIE", "SRR-9921-DELTA", "SRR-3312-ECHO",
+            "SRR-7748-FOXTROT", "SRR-2110-GOLF", "SRR-6659-HOTEL", "SRR-0092-INDIA", "SRR-4438-JULIETT",
+            "SRR-1288-KILO", "SRR-9928-LIMA", "SRR-3374-MIKE", "SRR-7112-NOVEMBER", "SRR-2291-OSCAR",
+            "SRR-6638-PAPA", "SRR-5510-QUEBEC", "SRR-1192-ROMEO", "SRR-8837-SIERRA", "SRR-4429-TANGO",
+            "SRR-3381-UNIFORM", "SRR-7729-VICTOR", "SRR-2210-WHISKEY", "SRR-9948-XRAY", "SRR-5537-YANKEE",
+            "SRR-1120-ZULU", "SRR-6691-MAX", "SRR-8822-NEXUS", "SRR-3319-VOID", "SRR-7741-PRIME",
+            "SRR-2258-FLUX", "SRR-9910-CORE", "SRR-5582-LINK", "SRR-1139-NODE", "SRR-6621-GATE",
+            "SRR-8849-KEY", "SRR-0012-LOCK", "SRR-4458-SAFE", "SRR-3392-VAULT", "SRR-7718-CRYPT",
+            "SRR-2269-CHAIN", "SRR-6681-BLOCK", "SRR-5522-HASH", "SRR-1149-SALT", "SRR-8891-PEPER",
+            "SRR-0038-IRON", "SRR-4472-STEEL", "SRR-3361-GOLD", "SRR-7759-SILVER", "SRR-2281-PLATINUM"
+        ];
+
+        async function checkAndInitDB() {
+            // Just check one doc to see if DB exists
+            const docRef = doc(db, "cases", defaultIds[0]);
+            const docSnap = await getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+                console.log("Seeding Database...");
+                defaultIds.forEach(async (id) => {
+                    await setDoc(doc(db, "cases", id), {
+                        used: false,
+                        date: "",
+                        name: ""
+                    });
+                });
+            }
+        }
+
+        // RENDER LOGIC
+        let currentFilter = 'all';
+        window.setFilter = (type) => {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === type) {
+                    btn.classList.add('bg-gray-800', 'text-white');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.remove('bg-gray-800', 'text-white');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+            renderTable();
+        };
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const searchInput = document.getElementById('searchInput');
+            const filterText = searchInput ? searchInput.value.toUpperCase() : '';
+            
+            tbody.innerHTML = '';
+            let usedCount = 0;
+            
+            // Sort by ID naturally
+            const sortedIds = Object.keys(casesData).sort((a,b) => defaultIds.indexOf(a) - defaultIds.indexOf(b));
+
+            if (sortedIds.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-600">Waiting for Data...</td></tr>`;
+                return;
+            }
+
+            sortedIds.forEach(id => {
+                const data = casesData[id];
+                if (data.used) usedCount++;
+
+                // Filters
+                if (filterText && !id.includes(filterText) && !data.name.toUpperCase().includes(filterText)) return;
+                if (currentFilter === 'used' && !data.used) return;
+                if (currentFilter === 'free' && data.used) return;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-800/50 transition-colors group border-b border-gray-800";
+
+                const statusColor = data.used ? 'bg-green-600 text-white glow-green' : 'bg-red-900/80 text-red-200 glow-red border border-red-900';
+                const statusText = data.used ? 'USED' : 'NO';
+                const dateText = data.used ? data.date : '<span class="text-gray-700 select-none">-</span>';
+                const disabledAttr = isAdmin ? '' : 'disabled';
+                
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-gray-300 font-medium">${id}</td>
+                    <td class="p-4 text-center">
+                        <button class="status-btn px-4 py-1.5 rounded text-xs font-bold tracking-widest w-24 ${statusColor}" ${disabledAttr} data-id="${id}" data-action="toggle">
+                            ${statusText}
+                        </button>
+                    </td>
+                    <td class="p-4 text-sm text-gray-400 font-mono">${dateText}</td>
+                    <td class="p-4">
+                        <input type="text" value="${data.name}" ${disabledAttr}
+                               class="void-input w-full px-3 py-2 rounded text-sm placeholder-gray-800 disabled:opacity-50" data-id="${id}" data-action="name">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update Stats
+            document.getElementById('stat-used').innerText = usedCount;
+            document.getElementById('stat-remaining').innerText = 50 - usedCount;
+            const percent = (usedCount / 50) * 100;
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-bar').className = `h-2.5 rounded-full transition-all duration-500 ${percent === 100 ? 'bg-green-500' : 'bg-blue-600'}`;
+
+            // Attach Event Listeners (Delegation doesn't work well with oninput in modules without global scope hack)
+            tbody.querySelectorAll('button[data-action="toggle"]').forEach(btn => {
+                btn.onclick = () => toggleStatus(btn.dataset.id);
+            });
+            tbody.querySelectorAll('input[data-action="name"]').forEach(input => {
+                input.oninput = (e) => updateName(input.dataset.id, e.target.value);
+            });
+            
+            if (searchInput) {
+                searchInput.oninput = renderTable;
+            }
+        }
+
+        // DB ACTIONS
+        async function toggleStatus(id) {
+            if(!isAdmin) return;
+            const current = casesData[id];
+            const newStatus = !current.used;
+            
+            let updateData = { used: newStatus };
+            if (newStatus) {
+                const now = new Date();
+                updateData.date = now.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '');
+            } else {
+                updateData.date = "";
+            }
+
+            await updateDoc(doc(db, "cases", id), updateData);
+        }
+
+        async function updateName(id, val) {
+            if(!isAdmin) return;
+            await updateDoc(doc(db, "cases", id), { name: val });
+        }
+
+        // LOGIN MODAL LOGIC
+        function setupLoginModal() {
+            const btn = document.getElementById('login-btn');
+            const modal = document.getElementById('login-modal');
+            const cancel = document.getElementById('cancel-login');
+            const confirm = document.getElementById('confirm-login');
+            
+            if(btn) btn.onclick = () => modal.classList.remove('hidden');
+            if(cancel) cancel.onclick = () => modal.classList.add('hidden');
+            
+            if(confirm) confirm.onclick = async () => {
+                const email = document.getElementById('email-input').value;
+                const pass = document.getElementById('pass-input').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    modal.classList.add('hidden');
+                } catch (error) {
+                    alert("Login Failed: " + error.message);
+                }
+            };
+        }
+
+    </script>
+</body>
+</html>
