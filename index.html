@@ -3,256 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRR FILES v3.2</title>
+    <title>SRR FILES v4.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@500&display=swap');
         
         :root {
-            --glass-base: rgba(20, 20, 25, 0.4);
+            /* DEEP ATMOSPHERE */
+            --bg-base: #050508;
+            --bg-radial: radial-gradient(circle at 50% 50%, #1a202c 0%, #000000 70%);
+            
+            --glass-base: rgba(20, 20, 25, 0.85);
             --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.03);
+            
             --text-main: rgba(255, 255, 255, 0.95);
             --text-dim: rgba(255, 255, 255, 0.5);
-            --accent: #60a5fa; /* Default Blue */
-            --accent-glow: rgba(96, 165, 250, 0.3);
+            
+            --accent: #3b82f6; 
+            --accent-glow: rgba(59, 130, 246, 0.4);
             --critical: #ef4444;
+            --success: #10b981;
+            
             --radius-lg: 24px;
-            --radius-md: 16px;
+            --radius-md: 12px;
+            --panel-bg: rgba(255,255,255,0.02);
+            --panel-hover: rgba(255,255,255,0.05);
         }
 
-        /* THEME OVERRIDES */
-        body.theme-red { 
-            --accent: #ef4444; 
-            --accent-glow: rgba(239, 68, 68, 0.3); 
+        /* LIGHT MODE */
+        body.theme-light { 
+            --bg-base: #f3f4f6;
+            --bg-radial: radial-gradient(circle at 50% 50%, #ffffff 0%, #e5e7eb 70%);
+            --glass-base: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-main: #111827;
+            --text-dim: #6b7280;
+            --accent: #2563eb;
+            --panel-bg: rgba(0,0,0,0.02);
+            --panel-hover: rgba(0,0,0,0.05);
         }
-
-        /* CUSTOM SCROLLBARS */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #000;
+            background-color: var(--bg-base);
             color: var(--text-main);
             overflow-x: hidden;
             min-height: 100vh;
-            transition: all 0.5s ease;
+            transition: color 0.3s ease, background-color 0.3s ease;
         }
 
-        /* ANIMATED BACKGROUND */
-        #bg-layer { position: fixed; inset: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, #050508 0%, #000000 60%); opacity: 1; z-index: -3; animation: spin-slow 120s linear infinite; pointer-events: none; }
+        #bg-layer { position: fixed; inset: -50%; width: 200%; height: 200%; background: var(--bg-radial); opacity: 1; z-index: -3; animation: spin-slow 180s linear infinite; pointer-events: none; }
         @keyframes spin-slow { 100% { transform: rotate(360deg); } }
 
-        /* GLASS PANELS */
-        .glass-panel { 
-            background: var(--glass-base); 
-            backdrop-filter: blur(20px) saturate(110%); 
-            -webkit-backdrop-filter: blur(20px) saturate(110%);
-            border: 1px solid var(--glass-border); 
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
-            border-radius: var(--radius-lg); 
-        }
-
-        /* TOP BAR */
+        /* TOP BAR (SCROLLS AWAY) */
         .top-bar { 
-            position: sticky; top: 0; z-index: 50; 
+            position: relative; 
+            z-index: 50; 
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 20px 30px; 
-            background: rgba(0,0,0,0.6); 
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 30px; background: var(--glass-base); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* DATA TABLE STYLING */
+        /* STICKY CONTROLS WRAPPER */
+        .sticky-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            padding: 20px 30px;
+            margin: 0 -30px; /* Offset parent padding to touch edges */
+            /* TRANSPARENT BACKGROUND WITH BLUR */
+            background: transparent; 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        /* Add slight border when stuck to separate from content */
+        .sticky-wrapper.is-pinned {
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.2); /* Very subtle tint when pinned */
+        }
+
+        .controls-row {
+            display: flex; flex-direction: column; gap: 1rem; max-width: 80rem; margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .controls-row { flex-direction: row; justify-content: space-between; align-items: center; }
+        }
+
+        .glass-panel { 
+            background: var(--glass-base); backdrop-filter: blur(20px) saturate(110%);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-lg); 
+        }
+
+        /* TABLE GRID */
         .case-row {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 120px 1.5fr 2fr; 
-            align-items: center;
-            gap: 15px;
-            padding: 16px 20px; 
-            margin-bottom: 8px;
-            border-radius: var(--radius-md);
-            background: rgba(255,255,255,0.02);
-            border: 1px solid transparent;
-            border-left: 3px solid transparent;
+            display: grid; grid-template-columns: 40px 2fr 120px 1.5fr 2fr; align-items: center; gap: 15px;
+            padding: 14px 20px; margin-bottom: 6px; border-radius: var(--radius-md);
+            background: var(--panel-bg); border: 1px solid transparent; border-left: 3px solid transparent;
             transition: all 0.2s ease;
         }
-        .case-row:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: rgba(255,255,255,0.1);
-            transform: translateX(4px);
+        .case-row:hover { background: var(--panel-hover); border-color: var(--glass-border); transform: translateX(2px); }
+        .case-row.critical { border-left-color: var(--critical); background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, transparent 100%); }
+        
+        /* HEADER SORTING FIXED */
+        .case-row.header { 
+            background: transparent; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; 
+            font-weight: 800; color: var(--text-dim); padding: 10px 20px; border: none;
+            user-select: none;
         }
-        .case-row.critical {
-            border-left-color: var(--critical);
-            background: linear-gradient(90deg, rgba(239, 68, 68, 0.05) 0%, rgba(255,255,255,0.02) 100%);
+        .sort-btn {
+            background: transparent; border: none; color: var(--text-dim); font-weight: 800; font-size: 11px;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color 0.2s; text-transform: uppercase;
+            padding: 4px 8px; border-radius: 4px;
         }
+        .sort-btn:hover { color: var(--text-main); background: var(--panel-hover); }
+        .sort-btn.active { color: var(--accent); }
 
-        .case-row.header {
-            background: transparent;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 800;
-            color: var(--text-dim);
-            padding: 10px 20px;
-            pointer-events: none;
-            border: none;
-        }
-
-        /* MONOSPACE FONTS FOR DATA */
         .mono-text { font-family: 'JetBrains Mono', monospace; }
+        .highlight-border { border-color: var(--accent) !important; box-shadow: 0 0 10px var(--accent-glow) !important; }
 
-        /* INPUTS */
         .void-input {
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 13px;
-            transition: 0.3s;
-            outline: none;
+            width: 100%; background: rgba(0,0,0,0.1); border: 1px solid var(--glass-border);
+            border-radius: 8px; padding: 8px 12px; color: var(--text-main); font-size: 13px; outline: none; transition: 0.3s;
         }
-        .void-input:focus {
-            border-color: var(--accent);
-            background: rgba(0,0,0,0.5);
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
-        .void-input:disabled { opacity: 0.5; cursor: not-allowed; background: transparent; border-color: transparent; padding-left: 0; }
-        
-        /* Specific style for Date Input to make it look like text when disabled */
-        .date-input:disabled { text-align: center; color: rgba(255,255,255,0.5); }
-        .date-input:enabled { text-align: center; color: var(--accent); border-color: var(--accent); }
+        .void-input:focus { border-color: var(--accent); background: rgba(0,0,0,0.05); }
+        .void-input:disabled { opacity: 0.6; cursor: not-allowed; background: transparent; border-color: transparent; padding-left: 0; }
+        .date-input { text-align: center; color: var(--text-dim); }
+        .date-input:enabled { color: var(--accent); }
 
-        /* STATUS BADGES */
         .status-badge {
-            display: inline-flex; justify-content: center; align-items: center;
-            padding: 6px 16px; border-radius: 99px;
-            font-size: 11px; font-weight: 800; letter-spacing: 1px;
-            transition: 0.3s; cursor: pointer;
-            border: 1px solid transparent;
-            width: 110px;
+            display: inline-flex; justify-content: center; align-items: center; padding: 5px 12px; border-radius: 99px;
+            font-size: 10px; font-weight: 800; letter-spacing: 1px; transition: 0.3s; cursor: pointer;
+            border: 1px solid transparent; width: 100px;
         }
-        .status-badge.used {
-            background: rgba(34, 197, 94, 0.1);
-            color: #4ade80;
-            border-color: rgba(34, 197, 94, 0.2);
-            box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
-        }
-        .status-badge.used:hover { background: rgba(34, 197, 94, 0.2); box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
-        
-        .status-badge.free {
-            background: rgba(255, 255, 255, 0.05);
-            color: #9ca3af;
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        .status-badge.free:hover { background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 15px rgba(255, 255, 255, 0.05); }
-        .status-badge:disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+        .status-badge.used { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.2); }
+        .status-badge.free { background: rgba(150, 150, 150, 0.1); color: var(--text-dim); border-color: var(--glass-border); }
+        .status-badge:hover { transform: scale(1.05); }
 
-        /* ACTION BUTTONS */
-        .action-btn {
-            width: 34px; height: 34px; border-radius: 8px; 
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.03); border: 1px solid transparent;
-            color: var(--text-dim); transition: 0.2s;
+        /* SEARCH UI */
+        .search-wrapper { position: relative; width: 100%; max-width: 350px; display: flex; align-items: center; }
+        .search-pill { 
+            width: 100%; background: var(--glass-base); border: 1px solid var(--glass-border);
+            border-radius: 99px; padding: 10px 20px 10px 45px; color: var(--text-main); font-size: 13px;
+            outline: none; transition: all 0.3s; backdrop-filter: blur(10px);
         }
-        .action-btn:hover { background: rgba(255,255,255,0.1); color: white; transform: scale(1.05); }
-        .action-btn.has-video { color: var(--accent); border-color: var(--accent); background: var(--accent-glow); }
-        .action-btn.is-critical { color: var(--critical); border-color: var(--critical); background: rgba(239, 68, 68, 0.1); }
+        .search-pill:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .search-icon { position: absolute; left: 18px; z-index: 10; color: var(--text-dim); pointer-events: none; }
 
-        /* SEARCH & FILTERS */
-        .search-container {
+        .filter-container {
+            display: flex; align-items: center; gap: 4px;
+            background: var(--glass-base); border: 1px solid var(--glass-border);
+            padding: 4px; border-radius: 99px; backdrop-filter: blur(10px);
             position: relative;
-            background: rgba(255,255,255,0.05);
-            border-radius: 99px;
-            padding: 2px;
-            border: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            width: 300px;
         }
-        .search-icon { padding: 0 15px; color: var(--text-dim); }
-        .search-input { background: transparent; border: none; outline: none; color: white; padding: 10px 0; width: 100%; font-size: 14px; }
-
-        /* Filter Pills */
         .filter-pill {
-            padding: 6px 18px; border-radius: 99px; font-size: 10px; font-weight: 800; 
-            color: var(--text-dim); border: 1px solid transparent; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 6px 16px; border-radius: 99px; font-size: 11px; font-weight: 700; color: var(--text-dim);
+            border: 1px solid transparent; transition: all 0.3s; background: transparent; cursor: pointer;
         }
-        .filter-pill:hover { background: rgba(255,255,255,0.05); color: white; }
-        .filter-pill.active {
-            background: var(--accent); color: black; box-shadow: 0 0 15px var(--accent-glow); transform: scale(1.05);
-        }
+        .filter-pill:hover { background: var(--panel-hover); color: var(--text-main); }
+        .filter-pill.active { background: var(--accent); color: white; box-shadow: 0 0 15px var(--accent-glow); }
 
-        /* STATS CARDS */
-        .stat-card {
-            background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid var(--glass-border); padding: 15px 25px; border-radius: 16px; display: flex; flex-direction: column; align-items: center;
+        /* CUSTOM DROPDOWN */
+        .custom-select-trigger {
+            padding: 6px 20px 6px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; color: var(--text-dim);
+            cursor: pointer; display: flex; align-items: center; gap: 8px; border: 1px solid transparent; border-left: 1px solid var(--glass-border);
         }
-        .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 4px; }
-        .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: white; }
-
-        /* MODALS */
-        .glass-modal { background: #0a0a0c; border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.8); }
-        .error-banner { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; display: none; backdrop-filter: blur(10px); }
-
-        /* TOAST */
-        #toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--accent); color: black; padding: 12px 24px; border-radius: 99px;
-            font-weight: 800; font-size: 12px; box-shadow: 0 10px 30px var(--accent-glow);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; pointer-events: none;
+        .custom-select-trigger:hover { color: var(--text-main); }
+        .custom-options {
+            position: absolute; top: 110%; right: 0; min-width: 150px;
+            background: #0a0a0c; border: 1px solid var(--glass-border); border-radius: 12px;
+            padding: 5px; display: none; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-height: 200px; overflow-y: auto;
         }
-        #toast.show { transform: translateX(-50%) translateY(0); }
+        .custom-options.show { display: block; animation: fadeIn 0.2s; }
+        .custom-option {
+            padding: 8px 12px; font-size: 11px; font-weight: 600; color: var(--text-dim);
+            border-radius: 8px; cursor: pointer; transition: 0.1s;
+        }
+        .custom-option:hover { background: var(--accent); color: white; }
+        .custom-option.selected { color: var(--accent); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .stat-box { display: flex; flex-direction: column; align-items: center; padding: 0 25px; }
+        .stat-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 18px; color: var(--text-main); }
+        .stat-lbl { font-size: 9px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+
+        .glass-modal { background: #0a0a0c; border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9); }
+        .error-banner { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; display: none; }
+        #toast { position: fixed; bottom: 30px; right: 30px; transform: translateY(100px); background: var(--accent); color: white; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 12px; box-shadow: 0 10px 30px var(--accent-glow); transition: transform 0.3s; z-index: 200; pointer-events: none; }
+        #toast.show { transform: translateY(0); }
+        
+        /* NEW BADGE */
+        .new-badge {
+            background: var(--accent); color: #000; padding: 1px 6px; border-radius: 4px;
+            font-size: 8px; font-weight: 900; letter-spacing: 0.5px;
+            box-shadow: 0 0 10px var(--accent-glow); margin-left: 8px;
+            animation: pulse-badge 2s infinite; display: none;
+        }
+        @keyframes pulse-badge { 0% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 15px var(--accent); } 100% { opacity: 0.7; transform: scale(1); } }
+
+        .row-check { appearance: none; width: 16px; height: 16px; border: 2px solid var(--text-dim); border-radius: 4px; background: transparent; cursor: pointer; transition: 0.2s; position: relative; display: none; }
+        .admin-active .row-check { display: inline-block; }
+        .row-check:checked { background: var(--accent); border-color: var(--accent); }
+        .row-check:checked::after { content: '✔'; font-size: 10px; color: white; position: absolute; top: -1px; left: 2px; }
+        #batch-toolbar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--glass-base); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 16px; display: flex; align-items: center; gap: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); transition: transform 0.3s; z-index: 100; }
+        #batch-toolbar.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
     <div id="bg-layer"></div>
 
-    <!-- TOP NAV -->
+    <!-- TOP NAV (SCROLLS AWAY) -->
     <div class="top-bar">
         <div class="flex items-center gap-4">
-            <!-- LOGO RESTORED -->
-            <div class="w-10 h-10 rounded-full bg-[var(--accent)] bg-opacity-10 border border-[var(--accent)] border-opacity-20 flex items-center justify-center text-[var(--accent)] transition-colors shadow-[0_0_15px_var(--accent-glow)]">
-                <i class="fa-solid fa-shield-halved text-xl"></i>
-            </div>
+            <i class="fa-solid fa-shield-halved text-2xl text-[var(--accent)] drop-shadow-[0_0_15px_var(--accent-glow)]"></i>
             <div>
-                <h1 class="text-xl font-black tracking-tighter text-white">SRR <span style="color:var(--accent)" class="transition-colors">FILES</span></h1>
-                <div class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-white/40 uppercase">
+                <h1 class="text-lg font-black tracking-tighter text-[var(--text-main)]">SRR <span style="color:var(--accent)" class="transition-colors">FILES</span></h1>
+                <div class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-[var(--text-dim)] uppercase">
                     <div id="connection-dot" class="w-2 h-2 rounded-full bg-red-500"></div>
                     <span id="connection-text">Connecting...</span>
                 </div>
             </div>
         </div>
 
-        <div class="hidden md:flex gap-4">
-            <div class="stat-card">
-                <span class="stat-label">Total</span>
-                <span class="stat-val">50</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Used</span>
-                <span class="stat-val text-green-400" id="stat-used">--</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Free</span>
-                <span class="stat-val text-blue-400" id="stat-remaining">--</span>
-            </div>
+        <div class="hidden md:flex bg-[var(--panel-bg)] border border-[var(--glass-border)] rounded-full py-2 px-6">
+            <div class="stat-box" style="border:none"><span class="stat-val" id="stat-total">50</span><span class="stat-lbl">Total Files</span></div>
         </div>
 
         <div class="flex items-center gap-3">
             <div class="hidden md:flex gap-2 mr-4">
-                <button onclick="exportCSV()" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold border border-white/10 transition">REPORT</button>
-                <button onclick="toggleTheme()" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold border border-white/10 transition">THEME</button>
+                <button onclick="addNewCase()" class="w-8 h-8 rounded-full bg-[var(--accent)] text-white hover:scale-110 transition flex items-center justify-center shadow-lg shadow-[var(--accent-glow)]" title="Add New Case"><i class="fa-solid fa-plus"></i></button>
+                <button onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-[var(--panel-bg)] text-[var(--text-dim)] border border-[var(--glass-border)] hover:text-[var(--text-main)] transition flex items-center justify-center" title="Theme"><i class="fa-solid fa-sun text-xs"></i></button>
             </div>
             <div id="auth-ui">
                 <button onclick="document.getElementById('login-modal').classList.remove('hidden')" 
-                    class="px-5 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold tracking-wide transition">
+                    class="px-5 py-2 rounded-full bg-[var(--panel-bg)] border border-[var(--glass-border)] text-xs font-bold tracking-wide transition hover:bg-white/10">
                     <i class="fa-solid fa-lock mr-2"></i> LOGIN
                 </button>
             </div>
@@ -260,94 +250,133 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <div class="max-w-7xl mx-auto p-6 md:p-10 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 pb-10 relative z-10">
 
-        <!-- ERROR MESSAGE -->
-        <div id="firestore-error" class="error-banner">
-            <strong class="block mb-2 text-white text-base"><i class="fa-solid fa-triangle-exclamation mr-2"></i> SETUP REQUIRED</strong>
+        <div id="firestore-error" class="error-banner mt-6">
+            <strong class="block mb-2 text-base"><i class="fa-solid fa-triangle-exclamation mr-2"></i> SETUP REQUIRED</strong>
             Please create the Firestore Database in Firebase Console (Start in Test Mode).
         </div>
 
-        <!-- CONTROLS & FILTERS -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div class="search-container">
-                <i class="fa-solid fa-search search-icon"></i>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search Database ID...">
-            </div>
+        <!-- STICKY CONTROLS WRAPPER (TRANSPARENT BACKGROUND) -->
+        <div class="sticky-wrapper" id="sticky-header">
+            <div class="controls-row">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-pill" placeholder="Search ID, Subject, or Notes...">
+                </div>
 
-            <!-- Fixed Filter Pills -->
-            <div class="flex bg-white/5 p-1 rounded-full border border-white/10 gap-1">
-                <button onclick="window.setFilter('all')" class="filter-pill active" data-filter="all">ALL FILES</button>
-                <button onclick="window.setFilter('used')" class="filter-pill" data-filter="used">USED</button>
-                <button onclick="window.setFilter('critical')" class="filter-pill" data-filter="critical">CRITICAL</button>
-                <button onclick="window.setFilter('video')" class="filter-pill" data-filter="video">EVIDENCE</button>
+                <!-- UNIFIED FILTER BAR -->
+                <div class="filter-container">
+                    <button onclick="window.setFilter('all')" class="filter-pill active" data-filter="all">ALL</button>
+                    <button onclick="window.setFilter('used')" class="filter-pill" data-filter="used">USED</button>
+                    <button onclick="window.setFilter('critical')" class="filter-pill" data-filter="critical">CRITICAL</button>
+                    
+                    <!-- CUSTOM DROPDOWN -->
+                    <div class="relative">
+                        <div class="custom-select-trigger" onclick="toggleAgentDropdown(event)">
+                            <span id="agent-trigger-text">ALL PERSONS</span>
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                        <div class="custom-options" id="agent-options"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- THE LIST -->
-        <div class="glass-panel p-2 md:p-6 min-h-[600px]">
+        <div class="glass-panel p-2 md:p-6 min-h-[600px] mt-2">
+            <!-- SORTING HEADER -->
             <div class="case-row header hidden md:grid">
-                <span>Identifier</span>
-                <div class="text-center">Status</div>
-                <div class="text-center">Tools</div>
-                <div class="text-center">Timestamp</div>
-                <span>Agent / Notes</span>
+                <div class="text-center" id="header-select"><i class="fa-solid fa-check-double opacity-50"></i></div>
+                
+                <button class="sort-btn" onclick="setSort('id')">
+                    ID No. <i class="fa-solid fa-sort ml-1 opacity-50"></i>
+                </button>
+                
+                <div class="flex justify-center">
+                    <button class="sort-btn" onclick="setSort('status')">
+                        Status <i class="fa-solid fa-sort ml-1 opacity-50"></i>
+                    </button>
+                </div>
+                
+                <div class="flex justify-center">
+                    <button class="sort-btn" onclick="setSort('date')">
+                        Timestamp <i class="fa-solid fa-sort ml-1 opacity-50"></i>
+                    </button>
+                </div>
+                
+                <div class="flex justify-start pl-3">
+                    <button class="sort-btn" onclick="setSort('agent')">
+                        Subject / Notes <i class="fa-solid fa-sort ml-1 opacity-50"></i>
+                    </button>
+                </div>
             </div>
 
             <div id="tableBody" class="space-y-1">
-                <div class="text-center py-20 text-white/20 font-bold tracking-widest animate-pulse">Initializing Secure Link...</div>
+                <div class="text-center py-20 text-[var(--text-dim)] font-bold tracking-widest animate-pulse">Initializing Secure Link...</div>
             </div>
         </div>
 
-        <div class="text-center mt-12 mb-4 text-[10px] text-white/20 font-mono tracking-widest uppercase">
-            System Developed by <span class="text-white/40">rick_grimesz</span> & <span class="text-white/40">Gemini</span> // SRR FILES V3.2
+        <div class="text-center mt-12 mb-4 text-[10px] text-[var(--text-dim)] font-mono tracking-widest uppercase">
+            System Developed by <span class="text-[var(--text-main)] opacity-50">rick_grimesz</span> & <span class="text-[var(--text-main)] opacity-50">Gemini</span> // SRR FILES V4.5
         </div>
     </div>
 
-    <!-- TOAST POPUP -->
-    <div id="toast"><i class="fa-solid fa-circle-check mr-2"></i>SAVED SUCCESSFULLY</div>
+    <!-- BATCH TOOLBAR -->
+    <div id="batch-toolbar">
+        <span class="text-xs font-bold text-[var(--text-main)] mr-2" id="batch-count">0 Selected</span>
+        <button onclick="batchAction('used')" class="px-3 py-1.5 bg-green-500/10 text-green-500 border border-green-500/20 rounded-lg text-xs font-bold hover:bg-green-500 hover:text-black">MARK USED</button>
+        <button onclick="batchAction('free')" class="px-3 py-1.5 bg-white/5 text-gray-400 border border-white/10 rounded-lg text-xs font-bold hover:bg-white/20 hover:text-white">MARK FREE</button>
+        <button onclick="batchAction('delete')" class="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white"><i class="fa-solid fa-trash"></i></button>
+        <button onclick="clearBatch()" class="ml-2 text-[var(--text-dim)] hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
 
-    <!-- LOGIN MODAL -->
-    <div id="login-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <!-- TOAST -->
+    <div id="toast"><i class="fa-solid fa-circle-check mr-2"></i>SAVED</div>
+
+    <!-- MODALS (CLOSE ON BG CLICK) -->
+    <div id="login-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm" onclick="if(event.target===this) this.classList.add('hidden')">
         <div class="glass-modal w-full max-w-md p-8 relative">
-            <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="absolute top-4 right-4 text-white/30 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[var(--text-dim)] hover:text-[var(--text-main)]"><i class="fa-solid fa-xmark text-xl"></i></button>
             <div class="text-center mb-8">
-                <div class="w-16 h-16 rounded-full bg-[var(--accent)] bg-opacity-20 text-[var(--accent)] flex items-center justify-center mx-auto mb-4 text-2xl border border-[var(--accent)] border-opacity-30">
-                    <i class="fa-solid fa-fingerprint"></i>
-                </div>
-                <h2 class="text-xl font-bold text-white">Admin Authorization</h2>
+                <i class="fa-solid fa-fingerprint text-4xl text-[var(--accent)] mb-4"></i>
+                <h2 class="text-xl font-bold text-[var(--text-main)]">Admin Authorization</h2>
             </div>
-            <input type="email" id="email-input" placeholder="Agent ID" class="void-input mb-3 bg-black/40 border-white/10 py-3">
-            <input type="password" id="pass-input" placeholder="Passcode" class="void-input mb-6 bg-black/40 border-white/10 py-3">
-            <button id="confirm-login" class="w-full py-3 bg-[var(--accent)] hover:opacity-90 text-black font-bold rounded-lg transition shadow-lg shadow-blue-500/20">AUTHENTICATE</button>
+            <input type="email" id="email-input" placeholder="Agent ID" class="void-input mb-3 py-3">
+            <input type="password" id="pass-input" placeholder="Passcode" class="void-input mb-6 py-3">
+            <button id="confirm-login" class="w-full py-3 bg-[var(--accent)] hover:opacity-90 text-white font-bold rounded-lg transition">AUTHENTICATE</button>
         </div>
     </div>
 
-    <!-- VIDEO MODAL -->
-    <div id="video-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md">
-        <div class="glass-modal w-full max-w-3xl p-6 relative border border-white/10">
-            <button onclick="closeVideoModal()" class="absolute top-4 right-4 text-white/30 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            
-            <div class="flex items-center gap-3 mb-4">
-                <div class="text-[var(--accent)]"><i class="fa-solid fa-film text-lg"></i></div>
+    <div id="manager-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md" onclick="if(event.target===this) this.classList.add('hidden')">
+        <div class="glass-modal w-full max-w-4xl h-[80vh] flex flex-col relative border border-[var(--glass-border)]">
+            <button onclick="document.getElementById('manager-modal').classList.add('hidden')" class="absolute top-4 right-4 text-white/30 hover:text-white z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="p-6 border-b border-[var(--glass-border)] flex items-center gap-4 bg-[var(--panel-bg)]">
+                <div class="w-12 h-12 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xl font-bold shadow-[0_0_20px_var(--accent-glow)]"><i class="fa-solid fa-folder-open"></i></div>
                 <div>
-                    <h3 class="text-lg font-bold text-white leading-none">Evidence Locker</h3>
-                    <p class="text-[10px] text-white/40 font-mono mt-1" id="vid-modal-id">CASE ID: ---</p>
+                    <h2 class="text-2xl font-black text-[var(--text-main)]" id="mgr-id">CASE ID: ---</h2>
+                    <div class="flex gap-4 text-xs font-mono mt-1 text-[var(--text-dim)]"><span id="mgr-status">ACTIVE</span><span id="mgr-date">--</span></div>
+                </div>
+                <div class="ml-auto flex gap-2">
+                    <button onclick="togglePriorityInMgr()" class="px-4 py-2 border border-[var(--glass-border)] rounded-lg text-xs font-bold hover:bg-white/5 transition" id="mgr-priority-btn">MARK CRITICAL</button>
+                    <button onclick="deleteCaseInMgr()" class="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition">ARCHIVE</button>
                 </div>
             </div>
-
-            <div id="video-player-container" class="aspect-video bg-black rounded-xl border border-white/10 flex items-center justify-center mb-6 overflow-hidden relative shadow-2xl">
-                <div class="text-white/30 text-sm flex flex-col items-center gap-2">
-                    <i class="fa-solid fa-eye-slash text-2xl"></i>
-                    <span>No Digital Evidence Found</span>
+            
+            <!-- CONTENT: EVIDENCE LOCKER CENTER STAGE -->
+            <div class="flex-1 p-8 flex flex-col bg-[var(--panel-bg)] overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-bold text-[var(--text-dim)] uppercase tracking-wider">EVIDENCE LOCKER</h3>
                 </div>
-            </div>
-
-            <div id="video-input-area" class="hidden bg-white/5 p-4 rounded-xl border border-white/5">
-                <label class="text-[10px] uppercase font-bold text-white/40 block mb-2">Update Evidence Link (YouTube / MP4 / Drive)</label>
-                <div class="flex gap-2">
-                    <input type="text" id="video-url-input" class="void-input flex-grow bg-black/50" placeholder="https://...">
-                    <button onclick="saveVideo()" class="px-6 py-2 bg-[var(--accent)] text-black font-bold rounded-lg text-xs hover:scale-105 transition">SAVE EVIDENCE</button>
+                
+                <div id="video-player-container" class="flex-grow aspect-video bg-black rounded-xl border border-[var(--glass-border)] flex items-center justify-center overflow-hidden relative shadow-2xl"></div>
+                
+                <div class="mt-6 p-4 bg-[var(--glass-base)] border border-[var(--glass-border)] rounded-xl">
+                    <label class="text-[10px] uppercase font-bold text-[var(--text-dim)] block mb-2">Update Evidence Link</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="mgr-video-input" class="void-input flex-grow bg-black/20" placeholder="https://...">
+                        <button onclick="saveMgrData()" class="px-6 py-2 bg-[var(--accent)] text-white font-bold rounded-lg text-xs shadow-lg hover:scale-105 transition">SAVE</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -367,25 +396,25 @@
         };
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         let app, db, auth;
         let isAdmin = false;
         let casesData = {};
+        let sortKey = 'id';
+        let sortOrder = 1; 
+        let currentFilter = 'all';
+        let agentFilter = '';
+        let selectedCases = new Set();
         let currentModalId = null;
 
         const defaultIds = [
-            "SRR-8291-ALPHA", "SRR-1029-BRAVO", "SRR-5542-CHARLIE", "SRR-9921-DELTA", "SRR-3312-ECHO",
-            "SRR-7748-FOXTROT", "SRR-2110-GOLF", "SRR-6659-HOTEL", "SRR-0092-INDIA", "SRR-4438-JULIETT",
-            "SRR-1288-KILO", "SRR-9928-LIMA", "SRR-3374-MIKE", "SRR-7112-NOVEMBER", "SRR-2291-OSCAR",
-            "SRR-6638-PAPA", "SRR-5510-QUEBEC", "SRR-1192-ROMEO", "SRR-8837-SIERRA", "SRR-4429-TANGO",
-            "SRR-3381-UNIFORM", "SRR-7729-VICTOR", "SRR-2210-WHISKEY", "SRR-9948-XRAY", "SRR-5537-YANKEE",
-            "SRR-1120-ZULU", "SRR-6691-MAX", "SRR-8822-NEXUS", "SRR-3319-VOID", "SRR-7741-PRIME",
-            "SRR-2258-FLUX", "SRR-9910-CORE", "SRR-5582-LINK", "SRR-1139-NODE", "SRR-6621-GATE",
-            "SRR-8849-KEY", "SRR-0012-LOCK", "SRR-4458-SAFE", "SRR-3392-VAULT", "SRR-7718-CRYPT",
-            "SRR-2269-CHAIN", "SRR-6681-BLOCK", "SRR-5522-HASH", "SRR-1149-SALT", "SRR-8891-PEPER",
-            "SRR-0038-IRON", "SRR-4472-STEEL", "SRR-3361-GOLD", "SRR-7759-SILVER", "SRR-2281-PLATINUM"
+            "SRR-8291-1029", "SRR-5542-3312", "SRR-7748-2110", "SRR-6659-0092", "SRR-4438-1288",
+            "SRR-9928-3374", "SRR-7112-2291", "SRR-6638-5510", "SRR-1192-8837", "SRR-4429-3381",
+            "SRR-7729-2210", "SRR-9948-5537", "SRR-1120-6691", "SRR-8822-3319", "SRR-7741-2258",
+            "SRR-9910-5582", "SRR-1139-6621", "SRR-8849-0012", "SRR-4458-3392", "SRR-7718-2269",
+            "SRR-6681-5522", "SRR-1149-8891", "SRR-0038-4472", "SRR-3361-7759", "SRR-2281-9948"
         ];
 
         try {
@@ -400,12 +429,14 @@
                 const ui = document.getElementById('auth-ui');
                 if (user) {
                     isAdmin = true;
-                    ui.innerHTML = `<button id="logout-btn" class="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-full text-xs font-bold">LOGOUT</button>`;
+                    document.body.classList.add('admin-active'); 
+                    ui.innerHTML = `<button id="logout-btn" class="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-full text-xs font-bold hover:bg-red-500 hover:text-white transition">LOGOUT</button>`;
                     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
                     checkAndInitDB();
                 } else {
                     isAdmin = false;
-                    ui.innerHTML = `<button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="px-5 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10">LOGIN</button>`;
+                    document.body.classList.remove('admin-active'); 
+                    ui.innerHTML = `<button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="px-5 py-2 rounded-full bg-[var(--glass-base)] border border-[var(--glass-border)] text-xs font-bold hover:bg-white/10">LOGIN</button>`;
                 }
                 renderTable();
             });
@@ -414,15 +445,10 @@
                 document.getElementById('connection-dot').className = "w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]";
                 document.getElementById('connection-text').innerText = "SECURE LINK ESTABLISHED";
                 document.getElementById('firestore-error').style.display = 'none';
-                
-                snapshot.forEach((doc) => {
-                    casesData[doc.id] = doc.data();
-                });
+                snapshot.forEach((doc) => { casesData[doc.id] = doc.data(); });
+                updateAgentDropdown();
                 renderTable();
             }, (error) => {
-                console.error("DB Error:", error);
-                document.getElementById('connection-dot').className = "w-2 h-2 rounded-full bg-red-600";
-                document.getElementById('connection-text').innerText = "CONNECTION FAILED";
                 if(error.code === 'permission-denied' || error.code === 'not-found') document.getElementById('firestore-error').style.display = 'block';
             });
         }
@@ -436,18 +462,60 @@
             } catch(e) {}
         }
 
-        // RENDER LOGIC
-        let currentFilter = 'all';
+        function updateAgentDropdown() {
+            const agents = new Set();
+            Object.values(casesData).forEach(c => { if(c.name && c.name.trim().length > 0) agents.add(c.name.trim()); });
+            const list = document.getElementById('agent-options');
+            list.innerHTML = '<div class="custom-option selected" onclick="selectAgent(\'\')">ALL PERSONS</div>';
+            Array.from(agents).sort().forEach(a => {
+                const div = document.createElement('div');
+                div.className = 'custom-option';
+                div.innerText = a.toUpperCase();
+                div.onclick = () => selectAgent(a);
+                list.appendChild(div);
+            });
+        }
+
+        window.toggleAgentDropdown = (e) => {
+            e.stopPropagation();
+            document.getElementById('agent-options').classList.toggle('show');
+        };
+
+        window.selectAgent = (val) => {
+            agentFilter = val;
+            document.getElementById('agent-trigger-text').innerText = val ? val.toUpperCase() : "ALL PERSONS";
+            document.getElementById('agent-options').classList.remove('show');
+            renderTable();
+        };
+
+        window.onclick = (e) => {
+            if(!e.target.closest('.custom-select-trigger')) {
+                document.getElementById('agent-options').classList.remove('show');
+            }
+        };
+
         window.setFilter = (type) => {
             currentFilter = type;
             document.querySelectorAll('.filter-pill').forEach(btn => {
-                if(btn.dataset.filter === type) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+                if(btn.dataset.filter === type) btn.classList.add('active'); else btn.classList.remove('active');
             });
             renderTable();
+        };
+
+        window.setSort = (key) => { 
+            if(sortKey === key) sortOrder *= -1; 
+            else { sortKey = key; sortOrder = 1; }
+            
+            document.querySelectorAll('.sort-btn').forEach(el => {
+                el.classList.remove('active');
+                el.querySelector('i').className = "fa-solid fa-sort ml-1 opacity-50"; 
+            });
+            const activeEl = document.querySelector(`.sort-btn[onclick="setSort('${key}')"]`);
+            if(activeEl) {
+                activeEl.classList.add('active');
+                activeEl.querySelector('i').className = sortOrder === 1 ? "fa-solid fa-sort-up ml-1" : "fa-solid fa-sort-down ml-1";
+            }
+            renderTable(); 
         };
 
         function renderTable() {
@@ -458,12 +526,30 @@
             const loader = tbody.querySelector('.animate-pulse');
             if(loader && Object.keys(casesData).length > 0) loader.remove();
 
+            const allKeys = Object.keys(casesData);
+            if(document.getElementById('stat-total')) document.getElementById('stat-total').innerText = allKeys.length;
+
             let usedCount = 0;
-            const sortedIds = Object.keys(casesData).sort((a,b) => {
-                const pA = casesData[a].priority ? 1 : 0;
-                const pB = casesData[b].priority ? 1 : 0;
-                if(pA !== pB) return pB - pA;
-                return defaultIds.indexOf(a) - defaultIds.indexOf(b);
+            const sortedIds = allKeys.sort((a,b) => {
+                let valA, valB;
+                
+                if(sortKey === 'status') {
+                    valA = casesData[a].used ? 1 : 0;
+                    valB = casesData[b].used ? 1 : 0;
+                } else if(sortKey === 'agent') {
+                    valA = (casesData[a].name || '').toUpperCase();
+                    valB = (casesData[b].name || '').toUpperCase();
+                    return valA.localeCompare(valB) * sortOrder;
+                } else if(sortKey === 'date') {
+                    const parseD = d => { if(!d) return 0; const p=d.split(' ')[0].split('/'); return new Date(p[2],p[1]-1,p[0]).getTime(); };
+                    valA = parseD(casesData[a].date);
+                    valB = parseD(casesData[b].date);
+                } else {
+                    valA = parseInt(a.replace(/\D/g, '')) || 0;
+                    valB = parseInt(b.replace(/\D/g, '')) || 0;
+                }
+                
+                return (valB - valA) * sortOrder;
             });
 
             if (sortedIds.length === 0) return;
@@ -473,188 +559,189 @@
                 if (data.used) usedCount++;
 
                 let isVisible = true;
-                if (filterText && !id.includes(filterText) && !data.name.toUpperCase().includes(filterText)) isVisible = false;
+                const searchMatch = filterText && (id.includes(filterText) || (data.name && data.name.toUpperCase().includes(filterText)));
+                
+                if (filterText && !searchMatch) isVisible = false;
                 if (currentFilter === 'used' && !data.used) isVisible = false;
                 if (currentFilter === 'free' && data.used) isVisible = false;
                 if (currentFilter === 'critical' && !data.priority) isVisible = false;
-                if (currentFilter === 'video' && !data.video) isVisible = false;
+                if (agentFilter && data.name !== agentFilter) isVisible = false;
 
                 let row = document.getElementById(`row-${id}`);
-                
                 if (!row) {
                     row = document.createElement('div');
                     row.id = `row-${id}`;
                     row.innerHTML = `
-                        <div class="mono-text text-sm font-bold text-white/90 flex items-center gap-2">
-                            ${id} <i class="fa-solid fa-triangle-exclamation text-red-500 hidden priority-icon" title="Critical Case"></i>
+                        <div class="text-center"><input type="checkbox" class="row-check" data-id="${id}" onclick="toggleSelect('${id}')"></div>
+                        <div class="mono-text text-sm font-bold text-[var(--text-main)] flex items-center gap-2 cursor-pointer sensitive-data group" onclick="openManager('${id}')">
+                            <i class="fa-solid fa-folder text-[var(--text-dim)] group-hover:text-[var(--accent)]"></i> <span class="id-text">${id}</span>
+                            <i class="fa-solid fa-triangle-exclamation text-red-500 hidden priority-icon"></i>
+                            <span class="new-badge">NEW</span>
                         </div>
-                        <div class="text-center">
-                            <button class="status-badge" data-action="toggle">AVAILABLE</button>
-                        </div>
-                        <div class="flex justify-center gap-2">
-                            <button class="action-btn" data-action="video" title="Evidence Locker"><i class="fa-solid fa-film"></i></button>
-                            <button class="action-btn" data-action="priority" title="Mark Critical"><i class="fa-solid fa-star"></i></button>
-                        </div>
-                        <div>
-                            <!-- EDITABLE DATE INPUT -->
-                            <input type="text" class="void-input font-mono text-center text-xs date-input" placeholder="--" data-action="date">
-                        </div>
-                        <div>
-                            <input type="text" class="void-input font-mono" placeholder="..." data-action="name">
-                        </div>
+                        <div class="text-center"><button class="status-badge" onclick="toggleStatus('${id}')">AVAILABLE</button></div>
+                        <div><input type="text" class="void-input font-mono text-center text-xs date-input" placeholder="--" onchange="updateDate('${id}',this.value)"></div>
+                        <div><input type="text" class="void-input font-mono sensitive-data name-input" placeholder="..." oninput="updateName('${id}',this.value)" list="agent-list"></div>
                     `;
                     tbody.appendChild(row);
-
-                    // BIND EVENTS
-                    row.querySelector('[data-action="toggle"]').onclick = () => toggleStatus(id);
-                    row.querySelector('[data-action="name"]').oninput = (e) => updateName(id, e.target.value);
-                    row.querySelector('[data-action="date"]').onchange = (e) => updateDate(id, e.target.value); // Add Date Listener
-                    row.querySelector('[data-action="video"]').onclick = () => openVideoModal(id);
-                    row.querySelector('[data-action="priority"]').onclick = () => togglePriority(id);
                 }
 
                 row.style.display = isVisible ? 'grid' : 'none';
-
                 if (isVisible) {
                     row.className = `case-row ${data.priority ? 'critical' : ''}`;
                     row.querySelector('.priority-icon').style.display = data.priority ? 'inline' : 'none';
+                    
+                    const isNew = data.created && (Date.now() - data.created) < 86400000;
+                    const badge = row.querySelector('.new-badge');
+                    if(isNew) badge.style.display = 'inline-block'; else badge.style.display = 'none';
+                    
+                    const nameInput = row.querySelector('.name-input');
+                    if(filterText && data.name && data.name.toUpperCase().includes(filterText)) nameInput.classList.add('highlight-border');
+                    else nameInput.classList.remove('highlight-border');
 
-                    // Status
-                    const btn = row.querySelector('[data-action="toggle"]');
+                    const btn = row.querySelector('.status-badge');
                     const statusClass = data.used ? 'used' : 'free';
                     const statusLabel = data.used ? 'USED' : 'AVAILABLE';
                     if (btn.className !== `status-badge ${statusClass}`) btn.className = `status-badge ${statusClass}`;
                     if (btn.innerText !== statusLabel) btn.innerText = statusLabel;
 
-                    // Date (Protected Input)
-                    const dateInput = row.querySelector('[data-action="date"]');
-                    if (document.activeElement !== dateInput) {
-                        if (dateInput.value !== (data.date || '')) dateInput.value = data.date || '';
-                    }
+                    const dateInput = row.querySelector('.date-input');
+                    if (document.activeElement !== dateInput && dateInput.value !== (data.date || '')) dateInput.value = data.date || '';
+                    if (document.activeElement !== nameInput && nameInput.value !== data.name) nameInput.value = data.name;
 
-                    // Buttons
-                    const vidBtn = row.querySelector('[data-action="video"]');
-                    const priBtn = row.querySelector('[data-action="priority"]');
-                    
-                    if(data.video && !vidBtn.classList.contains('has-video')) vidBtn.classList.add('has-video');
-                    else if(!data.video && vidBtn.classList.contains('has-video')) vidBtn.classList.remove('has-video');
-
-                    if(data.priority && !priBtn.classList.contains('is-critical')) priBtn.classList.add('is-critical');
-                    else if(!data.priority && priBtn.classList.contains('is-critical')) priBtn.classList.remove('is-critical');
-
-                    // Name (Protected Input)
-                    const input = row.querySelector('[data-action="name"]');
-                    if (document.activeElement !== input && input.value !== data.name) input.value = data.name;
-
-                    // Permissions
-                    const btns = row.querySelectorAll('button:not([data-action="video"]), input');
-                    btns.forEach(b => b.disabled = !isAdmin);
-                    priBtn.style.opacity = isAdmin ? 1 : 0.2;
-                    priBtn.style.pointerEvents = isAdmin ? 'auto' : 'none';
+                    const inputs = row.querySelectorAll('input:not(.row-check), button');
+                    inputs.forEach(i => i.disabled = !isAdmin);
                 }
             });
-
-            // Update Stats
-            if(document.getElementById('stat-used')) document.getElementById('stat-used').innerText = usedCount;
-            if(document.getElementById('stat-remaining')) document.getElementById('stat-remaining').innerText = 50 - usedCount;
 
             if (searchInput) searchInput.oninput = renderTable;
         }
 
-        async function toggleStatus(id) {
+        // --- ACTIONS ---
+        window.toggleStatus = async (id) => {
             if(!isAdmin) return;
             const current = casesData[id];
-            const newStatus = !current.used;
-            let updateData = { used: newStatus };
-            // Auto-generate date if turning ON, but only if date is empty
-            if (newStatus && !current.date) {
+            let updateData = { used: !current.used };
+            if (!current.used && !current.date) {
                 const now = new Date();
                 updateData.date = now.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '');
-            } else if (!newStatus) { 
-                updateData.date = ""; // Clear date if resetting
-            }
+            } else if (current.used) updateData.date = ""; 
             await updateDoc(doc(db, "cases", id), updateData);
-        }
+        };
 
-        async function updateName(id, val) {
-            if(!isAdmin) return;
-            await updateDoc(doc(db, "cases", id), { name: val });
-        }
+        window.updateName = async (id, val) => { if(isAdmin) await updateDoc(doc(db, "cases", id), { name: val }); };
+        window.updateDate = async (id, val) => { if(isAdmin) await updateDoc(doc(db, "cases", id), { date: val }); };
         
-        // NEW: Update Date Manually
-        async function updateDate(id, val) {
+        window.addNewCase = async () => {
             if(!isAdmin) return;
-            await updateDoc(doc(db, "cases", id), { date: val });
-        }
+            const r1 = Math.floor(1000 + Math.random() * 9000);
+            const r2 = Math.floor(1000 + Math.random() * 9000);
+            const newId = `SRR-${r1}-${r2}`;
+            await setDoc(doc(db, "cases", newId), { 
+                used: false, date: "", name: "", video: "", priority: false, 
+                created: Date.now() 
+            });
+            showToast(`GENERATED: ${newId}`);
+        };
 
-        async function togglePriority(id) {
-            if(!isAdmin) return;
-            const current = casesData[id].priority || false;
-            await updateDoc(doc(db, "cases", id), { priority: !current });
-        }
-
-        // VIDEO
-        window.openVideoModal = (id) => {
-            currentModalId = id;
-            document.getElementById('video-modal').classList.remove('hidden');
-            document.getElementById('vid-modal-id').innerText = `CASE ID: ${id}`;
-            document.getElementById('video-input-area').style.display = isAdmin ? 'block' : 'none';
-            document.getElementById('video-url-input').value = casesData[id].video || "";
+        // --- MANAGER ---
+        window.openManager = (id) => {
+            document.getElementById('manager-modal').classList.remove('hidden');
+            document.getElementById('mgr-id').innerText = `CASE ID: ${id}`;
+            const data = casesData[id];
             
+            document.getElementById('mgr-status').innerText = data.used ? 'USED' : 'AVAILABLE';
+            document.getElementById('mgr-status').className = data.used ? 'text-green-500 font-bold' : 'text-[var(--text-dim)] font-bold';
+            document.getElementById('mgr-date').innerText = data.date || "NO TIMESTAMP";
+
+            const pBtn = document.getElementById('mgr-priority-btn');
+            if(data.priority) { pBtn.className = 'px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-bold'; pBtn.innerText = "CRITICAL ACTIVE"; }
+            else { pBtn.className = 'px-4 py-2 border border-[var(--glass-border)] rounded-lg text-xs font-bold hover:bg-white/5'; pBtn.innerText = "MARK CRITICAL"; }
+
+            document.getElementById('mgr-video-input').value = data.video || "";
+            renderVideoPreview(data.video);
+            
+            window.saveMgrData = async () => {
+                if(!isAdmin) return;
+                const vid = document.getElementById('mgr-video-input').value;
+                await updateDoc(doc(db, "cases", id), { video: vid });
+                renderVideoPreview(vid);
+                showToast("EVIDENCE UPDATED");
+            };
+            
+            window.togglePriorityInMgr = async () => { if(isAdmin) await updateDoc(doc(db, "cases", id), { priority: !data.priority }); openManager(id); };
+            window.deleteCaseInMgr = async () => { if(isAdmin) { await deleteDoc(doc(db, "cases", id)); delete casesData[id]; document.getElementById(`row-${id}`).remove(); document.getElementById('manager-modal').classList.add('hidden'); showToast("ARCHIVED"); } };
+        };
+
+        function renderVideoPreview(url) {
             const container = document.getElementById('video-player-container');
-            const url = casesData[id].video;
-            
             if(url) {
-                if(url.includes('youtube.com') || url.includes('youtu.be')) {
-                    let vidId = url.split('v=')[1];
-                    const ampersandPosition = vidId ? vidId.indexOf('&') : -1;
-                    if(ampersandPosition !== -1) vidId = vidId.substring(0, ampersandPosition);
+                if(url.includes('youtube') || url.includes('youtu.be')) {
+                    let vidId = url.split('v=')[1] || url.split('/').pop();
                     container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${vidId}" frameborder="0" allowfullscreen></iframe>`;
-                } else if(url.endsWith('.mp4')) {
-                    container.innerHTML = `<video src="${url}" controls class="w-full h-full"></video>`;
+                } else if(url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+                    container.innerHTML = `<img src="${url}" class="h-full object-contain">`;
                 } else {
-                    container.innerHTML = `<a href="${url}" target="_blank" class="text-[var(--accent)] underline flex flex-col items-center gap-2"><i class="fa-solid fa-external-link-alt text-2xl"></i> Open External Evidence</a>`;
+                    // CLICKABLE CONTAINER BOX
+                    container.innerHTML = `<a href="${url}" target="_blank" class="w-full h-full flex flex-col items-center justify-center text-[var(--accent)] hover:bg-[var(--panel-hover)] transition cursor-pointer no-underline"><i class="fa-solid fa-external-link-alt text-3xl mb-2"></i><span class="font-bold underline">OPEN EXTERNAL LINK</span></a>`;
                 }
             } else {
                 container.innerHTML = `<div class="text-white/30 text-sm flex flex-col items-center gap-2"><i class="fa-solid fa-eye-slash text-2xl"></i><span>No Digital Evidence Found</span></div>`;
             }
+        }
+
+        // --- BATCH SYSTEM ---
+        window.toggleSelect = (id) => {
+            if(selectedCases.has(id)) selectedCases.delete(id);
+            else selectedCases.add(id);
+            updateBatchToolbar();
         };
 
-        window.closeVideoModal = () => {
-            document.getElementById('video-modal').classList.add('hidden');
-            document.getElementById('video-player-container').innerHTML = ''; 
+        function updateBatchToolbar() {
+            const bar = document.getElementById('batch-toolbar');
+            document.getElementById('batch-count').innerText = `${selectedCases.size} Selected`;
+            if(selectedCases.size > 0) bar.classList.add('show'); else bar.classList.remove('show');
+        }
+
+        window.batchAction = async (action) => {
+            if(!isAdmin) return;
+            const batch = writeBatch(db);
+            selectedCases.forEach(id => {
+                const ref = doc(db, "cases", id);
+                if(action === 'used') batch.update(ref, { used: true });
+                if(action === 'free') batch.update(ref, { used: false });
+                if(action === 'delete') {
+                    batch.delete(ref);
+                    delete casesData[id];
+                    document.getElementById(`row-${id}`).remove();
+                }
+            });
+            await batch.commit();
+            window.clearBatch();
+            showToast("BATCH UPDATE COMPLETE");
         };
 
-        window.saveVideo = async () => {
-            if(!isAdmin || !currentModalId) return;
-            const url = document.getElementById('video-url-input').value;
-            await updateDoc(doc(db, "cases", currentModalId), { video: url });
-            
-            // SHOW TOAST
+        window.clearBatch = () => {
+            selectedCases.clear();
+            document.querySelectorAll('.row-check').forEach(c => c.checked = false);
+            updateBatchToolbar();
+        };
+
+        window.toggleTheme = () => document.body.classList.toggle('theme-light');
+
+        // Sticky Logic
+        const stickyEl = document.querySelector('.sticky-wrapper');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) stickyEl.classList.add('is-pinned');
+            else stickyEl.classList.remove('is-pinned');
+        });
+
+        function showToast(msg) {
             const t = document.getElementById('toast');
+            t.innerHTML = `<i class="fa-solid fa-circle-check mr-2"></i>${msg}`;
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
-            
-            closeVideoModal();
-        };
+        }
 
-        window.exportCSV = () => {
-            let csv = "ID,Status,Date,Agent,Priority,EvidenceLink\n";
-            Object.keys(casesData).forEach(id => {
-                const r = casesData[id];
-                csv += `${id},${r.used?'USED':'FREE'},${r.date},${r.name},${r.priority?'CRITICAL':'NORMAL'},${r.video||''}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SRR_Report_${Date.now()}.csv`;
-            a.click();
-        };
-
-        window.toggleTheme = () => document.body.classList.toggle('theme-red');
-
-        // Login UI
         document.getElementById('confirm-login').onclick = async () => {
             const email = document.getElementById('email-input').value;
             const pass = document.getElementById('pass-input').value;
